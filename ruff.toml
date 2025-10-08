@@ -1,0 +1,50 @@
+target-version = "py312"
+line-length = 88
+
+[lint]
+select = ["ALL"]
+
+ignore = [
+  "S101",   # Allow assert statements
+  "COM812", # Rule that conflict with formatting
+  # Rules deemed too specific even for this config.
+  "AIR",  # airflow
+  "ERA",  # eradicate
+  "FAST", # fastapi
+  "CPY",  # flake8-copyright
+  "DJ",   # flake8-django
+  "FIX",  # flake8-fixme
+  "SLOT", # flake8-slots
+  "TD",   # flake8-todos
+  "DOC",  # pydoclint
+]
+
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[flake8-annotations]
+mypy-init-return = true
+suppress-dummy-args = true
+suppress-none-returning = true
+
+# Uncomment this for FastAPI dev
+# [lint.flake8-bugbear]
+# extend-immutable-calls = ["fastapi.Depends"]
+
+[lint.isort]
+force-single-line = false
+lines-after-imports = 2
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.pylint]
+max-args = 5
+max-branches = 12
+max-returns = 6
+max-statements = 50
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

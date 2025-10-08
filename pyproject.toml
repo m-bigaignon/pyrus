@@ -1,0 +1,83 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "oxidize"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.12"
+
+[dependency-groups]
+dev = [
+  "bandit>=1.8.6",
+  "mypy>=1.18.2",
+  "poethepoet>=0.37.0",
+  "pre-commit>=4.3.0",
+  "pytest>=8.4.2",
+  "pytest-benchmark>=5.1.0",
+  "pytest-cov>=7.0.0",
+  "ruff>=0.13.2",
+]
+
+[tool.hatch.build.target.wheel]
+packages = ["oxidize"]
+
+[tool.poe.tasks]
+lint = "ruff check"
+lint-fix = "lint --fix"
+fmt = "ruff format"
+fmt-check = "fmt check"
+tc = "mypy"
+tc-report = "mypy --html-report tc-reporting"
+
+test = "pytest"
+test-unit = "pytest tests/unit"
+test-integration = "pytest tests/integration"
+test-cov = "pytest --cov=src/ --cov-report=term-missing --cov-report=html"
+test-ff = "pytest -x -v --ff"
+
+benchmark = "pytest benchmarks --benchmark-only"
+benchmark-cmp = "benchmark --benchmark-compare"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+show_error_codes = true
+show_column_numbers = true
+show_error_context = true
+
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+
+disallow_any_explicit = true
+disallow_any_expr = true
+disallow_any_decorated = true
+disallow_any_unimported = true
+
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+check_untyped_defs = true
+
+disallow_subclassing_any = true
+disallow_any_generics = true
+
+no_implicit_optional = true
+strict_optional = true
+
+implicit_reexport = false
+strict_equality = true
+extra_checks = true
+
+enable_error_code = [
+  "redundant-expr",
+  "truthy-bool",
+  "ignore-without-code",
+  "unused-awaitable",
+  "explicit-override",
+]
