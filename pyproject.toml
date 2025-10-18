@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "oxidize"
+name = "rutils"
 version = "0.1.0"
 description = ""
 readme = "README.md"
@@ -22,7 +22,7 @@ dev = [
 ]
 
 [tool.hatch.build.target.wheel]
-packages = ["oxidize"]
+packages = ["rutils"]
 
 [tool.poe.tasks]
 lint = "ruff check"
