@@ -452,3 +452,13 @@ class Err(ResultProtocol[T, E]):
 
 
 Result = Ok[T, E] | Err[T, E]
+
+
+def from_optional[T](opt: T | None) -> Option[T]:
+    """Returns an Option from an optional value."""
+    return Some(opt) if opt is not None else Nothing()
+
+
+def from_value[T](opt: T) -> Option[T]:
+    """Returns an Option from a value."""
+    return Some(opt)
