@@ -262,6 +262,18 @@ Option = Nothing[T] | Some[T]
 class ResultProtocol[T, E](ABC):
     """Defines the Result API."""
 
+    @abstractmethod
+    def err(self) -> "Option[E]":
+        """Converts from Result[T, E] to Option[E]."""
+
+    @abstractmethod
+    def expect(self, msg: str) -> T:
+        """Return the contained Ok value."""
+
+    @abstractmethod
+    def expect_err(self, msg: str) -> E:
+        """Return the contained Err value."""
+
     @property
     @abstractmethod
     def is_err(self) -> bool:
@@ -272,10 +284,61 @@ class ResultProtocol[T, E](ABC):
     def is_ok(self) -> bool:
         """Returns whether this Result is an Ok."""
 
+    @abstractmethod
+    def map[U](self, op: Callable[[T], U]) -> "Result[U, E]":
+        """Maps a Result[T, E] to Result[U, E]."""
 
+    @abstractmethod
+    def map_or[U](self, default: U, f: Callable[[T], U]) -> U:
+        """Returns the provided default (if Err) or calls `f` on the inner value."""
+
+    @abstractmethod
+    def map_or_else[U](self, default: Callable[[], U], f: Callable[[T], U]) -> U:
+        """Calls the provided default (if Err) or calls `f` on the inner value."""
+
+    @abstractmethod
+    def map_err[F](self, op: Callable[[E], F]) -> "Result[T, F]":
+        """Maps a Result[T, E] to Result[T, F]."""
+
+    @abstractmethod
+    def ok(self) -> "Option[T]":
+        """Converts from Result[T, E] to Option[T]."""
+
+    @abstractmethod
+    def unwrap(self) -> T:
+        """Returns the contained Ok value or raises an exception."""
+
+    @abstractmethod
+    def unwrap_err(self) -> E:
+        """Returns the contained Err value or raises an exception."""
+
+    @abstractmethod
+    def unwrap_or(self, default: T) -> T:
+        """Returns the contained Ok value or the default value."""
+
+    @abstractmethod
+    def unwrap_or_else(self, f: Callable[[], T]) -> T:
+        """Returns the contained Ok value or computes it from a function."""
+
+
+@dataclass(eq=True, frozen=True)
 class Ok(ResultProtocol[T, E]):
     """A Result containing a value."""
 
+    _value: T
+
+    @override
+    def err(self) -> "Option[E]":
+        return Nothing()
+
+    @override
+    def expect(self, msg: str) -> T:
+        return self._value
+
+    @override
+    def expect_err(self, msg: str) -> E:
+        raise UnwrapError(msg)
+
     @property
     @override
     def is_err(self) -> bool:
@@ -286,10 +349,61 @@ class Ok(ResultProtocol[T, E]):
     def is_ok(self) -> bool:
         return True
 
+    @override
+    def map[U](self, op: Callable[[T], U]) -> "Result[U, E]":
+        return Ok(op(self._value))
 
+    @override
+    def map_or[U](self, default: U, f: Callable[[T], U]) -> U:
+        return f(self._value)
+
+    @override
+    def map_or_else[U](self, default: Callable[[], U], f: Callable[[T], U]) -> U:
+        return f(self._value)
+
+    @override
+    def map_err[F](self, op: Callable[[E], F]) -> "Result[T, F]":
+        return Ok(self._value)
+
+    @override
+    def ok(self) -> "Option[T]":
+        return Some(self._value)
+
+    @override
+    def unwrap(self) -> T:
+        return self._value
+
+    @override
+    def unwrap_err(self) -> E:
+        return self.expect_err("Called `Result.unwrap_err()` on an `Ok` value")
+
+    @override
+    def unwrap_or(self, default: T) -> T:
+        return self._value
+
+    @override
+    def unwrap_or_else(self, f: Callable[[], T]) -> T:
+        return self._value
+
+
+@dataclass(eq=True, frozen=True)
 class Err(ResultProtocol[T, E]):
     """A Result containing an error."""
 
+    _err: E
+
+    @override
+    def err(self) -> "Option[E]":
+        return Some(self._err)
+
+    @override
+    def expect(self, msg: str) -> T:
+        raise UnwrapError(msg)
+
+    @override
+    def expect_err(self, msg: str) -> E:
+        return self._err
+
     @property
     @override
     def is_err(self) -> bool:
@@ -299,6 +413,42 @@ class Err(ResultProtocol[T, E]):
     @override
     def is_ok(self) -> bool:
         return False
+
+    @override
+    def map[U](self, op: Callable[[T], U]) -> "Result[U, E]":
+        return Err(self._err)
+
+    @override
+    def map_or[U](self, default: U, f: Callable[[T], U]) -> U:
+        return default
+
+    @override
+    def map_or_else[U](self, default: Callable[[], U], f: Callable[[T], U]) -> U:
+        return default()
+
+    @override
+    def map_err[F](self, op: Callable[[E], F]) -> "Result[T, F]":
+        return Err(op(self._err))
+
+    @override
+    def ok(self) -> "Option[T]":
+        return Nothing()
+
+    @override
+    def unwrap(self) -> T:
+        return self.expect("Called `Result.unwrap()` on an `Err` value")
+
+    @override
+    def unwrap_err(self) -> E:
+        return self._err
+
+    @override
+    def unwrap_or(self, default: T) -> T:
+        return default
+
+    @override
+    def unwrap_or_else(self, f: Callable[[], T]) -> T:
+        return f()
 
 
 Result = Ok[T, E] | Err[T, E]
